@@ -47,6 +47,7 @@ void NodeSearchBetween(struct node *n, Record lower, Record upper, List l);
 bool isValidLower(struct node *n, int higher);
 bool isValidHigher(struct node *n, int lower);
 
+Record NodeNext(struct node *n, Record rec);
 
 ////////////////////////////////////////////////////////////////////////
 // Provided functions
@@ -194,6 +195,7 @@ Record NodeSearch(struct node *n, Record rec) {
 
 List TreeSearchBetween(Tree t, Record lower, Record upper) {
     List l = ListNew();
+    // invalidation case
     if (isValidHigher && isValidLower) {
         NodeSearchBetween(t->root, lower, upper, l);
     }
@@ -202,16 +204,6 @@ List TreeSearchBetween(Tree t, Record lower, Record upper) {
 
 // helper function
 void NodeSearchBetween(struct node *n, Record lower, Record upper, List l) {
-    // invalidation cases
-    // case 1 on lower side
-    if (n->left == NULL && n->rec < upper) {
-        return;
-    }
-    // case 2 on upper side
-    if (n->right == NULL && n->rec < lower) {
-        return;
-    }
-
     // in order traversal
     if (n == NULL) {
         ListAppend(l, n->rec);
@@ -229,7 +221,7 @@ void NodeSearchBetween(struct node *n, Record lower, Record upper, List l) {
     }
 }
 
-// find if valid
+// find if there exists an array between upper and lower bounds
 bool isValidLower(struct node *n, int higher) {
     if (n->left == NULL) {
         if (n->rec > higher) {
@@ -253,6 +245,7 @@ bool isValidHigher(struct node *n, int lower) {
 // TREE NEXT //
 
 Record TreeNext(Tree t, Record rec) {
+    NodeNext(t->root, rec);
     return NULL;
 }
 
@@ -261,6 +254,12 @@ Record NodeNext(struct node *n, Record rec) {
     if (n == NULL) {
         return NULL;
     }
+    if (n->rec < rec < n->right->rec) {
+        return n->right->rec;
+    }
+    if (n->rec == rec) {
+        return rec;
+    }
     if (n->rec < rec) {
         return NodeNext(n->right, rec);
     }
@@ -268,5 +267,6 @@ Record NodeNext(struct node *n, Record rec) {
         return NodeNext(n->left, rec);
     }
 }
+
 
 ////////////////////////////////////////////////////////////////////////
