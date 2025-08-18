@@ -42,6 +42,12 @@ struct node *RotateRight(struct node *n);
 int FindHeight(struct node *n);
 int FindBalance(struct node *n);
 
+void NodeSearchBetween(struct node *n, Record lower, Record upper, List l);
+
+bool isValidLower(struct node *n, int higher);
+bool isValidHigher(struct node *n, int lower);
+
+
 ////////////////////////////////////////////////////////////////////////
 // Provided functions
 // !!! DO NOT MODIFY THESE FUNCTIONS !!!
@@ -188,29 +194,79 @@ Record NodeSearch(struct node *n, Record rec) {
 
 List TreeSearchBetween(Tree t, Record lower, Record upper) {
     List l = ListNew();
-
+    if (isValidHigher && isValidLower) {
+        NodeSearchBetween(t->root, lower, upper, l);
+    }
+    return l;
 }
+
 // helper function
-struct node *NodeSearchBetween(struct node *n, Record lower, Record upper, List l) {
+void NodeSearchBetween(struct node *n, Record lower, Record upper, List l) {
+    // invalidation cases
     // case 1 on lower side
-    if (n->left == NULL && n->rec < lower && n->rec < upper) {
-        return NULL;
+    if (n->left == NULL && n->rec < upper) {
+        return;
     }
     // case 2 on upper side
-    if (n->right == NULL && n->rec > lower && n->rec > upper) {
-        return NULL;
+    if (n->right == NULL && n->rec < lower) {
+        return;
     }
 
-
+    // in order traversal
     if (n == NULL) {
-
+        ListAppend(l, n->rec);
+        return;
     }
+
+    if (n->rec > lower) {
+        NodeSearchBetween(n->left, lower, upper, l);
+    }
+    if (lower <= n->rec && n->rec <= upper) {
+        ListAppend(l, n->rec);
+    }
+    if (n->rec < upper) {
+        NodeSearchBetween(n->right, lower, upper, l);
+    }
+}
+
+// find if valid
+bool isValidLower(struct node *n, int higher) {
+    if (n->left == NULL) {
+        if (n->rec > higher) {
+            return false;
+        }
+        return true;
+    }
+    isValidLower(n->left, higher);
+}
+
+bool isValidHigher(struct node *n, int lower) {
+    if (n->left == NULL) {
+        if (n->rec > lower) {
+            return false;
+        }
+        return true;
+    }
+    isValidHigher(n->right, lower);
 }
 
 // TREE NEXT //
 
 Record TreeNext(Tree t, Record rec) {
     return NULL;
+}
+
+// helper function
+Record NodeNext(struct node *n, Record rec) {
+    if (n == NULL) {
+        return NULL;
+    }
+    if (n->rec < rec) {
+        return NodeNext(n->right, rec);
+    }
+    else if (n->rec > rec) {
+        return NodeNext(n->left, rec);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////
