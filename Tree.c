@@ -35,7 +35,7 @@ static void doTreeFree(Node n, bool freeRecords);
 
 // function declarations
 struct node *NodeInsert(struct node *n, Record rec);
-struct node *NodeSearch(struct node *n, Record rec);
+Record NodeSearch(struct node *n, Record rec);
 
 struct node *RotateLeft(struct node *n);
 struct node *RotateRight(struct node *n);
@@ -168,27 +168,43 @@ Record TreeSearch(Tree t, Record rec) {
 }
 
 // helper function
-struct node *NodeSearch(struct node *n, Record rec) {
+Record NodeSearch(struct node *n, Record rec) {
     if (n->rec == rec) {
         return rec;
-    } 
+    }
 
     if (n == NULL) {
         return NULL;
     }
     else if (n->rec > rec) {
-        n->left =  NodeSearch(n->left, rec);
+        return  NodeSearch(n->left, rec);
     }
     else {
-        n->right = NodeSearch(n->right, rec);
+        return NodeSearch(n->right, rec);
     }
-    return n;
 }
 
 // TREE SEARCH BETWEEN //
 
 List TreeSearchBetween(Tree t, Record lower, Record upper) {
-    return ListNew();
+    List l = ListNew();
+
+}
+// helper function
+struct node *NodeSearchBetween(struct node *n, Record lower, Record upper, List l) {
+    // case 1 on lower side
+    if (n->left == NULL && n->rec < lower && n->rec < upper) {
+        return NULL;
+    }
+    // case 2 on upper side
+    if (n->right == NULL && n->rec > lower && n->rec > upper) {
+        return NULL;
+    }
+
+
+    if (n == NULL) {
+
+    }
 }
 
 // TREE NEXT //
