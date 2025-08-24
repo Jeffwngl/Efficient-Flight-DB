@@ -179,7 +179,7 @@ Record TreeSearch(Tree t, Record rec) {
     return NodeSearch(t->root, rec, t->compare);
 }
 
-// helper function
+// helper function // add list insertion methods
 static Record NodeSearch(struct node *n, Record rec, int (*compare)(Record, Record)) {
     if (n == NULL) {
         return NULL;
@@ -198,7 +198,7 @@ static Record NodeSearch(struct node *n, Record rec, int (*compare)(Record, Reco
     }
 }
 
-// TREE SEARCH BETWEEN //
+// TREE SEARCH BETWEEN // TO FIX
 
 List TreeSearchBetween(Tree t, Record lower, Record upper) {
     List l = ListNew();
@@ -249,7 +249,7 @@ bool isValidHigher(struct node *n, int lower) {
     isValidHigher(n->right, lower);
 }
 
-// TREE NEXT //
+// TREE NEXT // TO FIX
 
 Record TreeNext(Tree t, Record rec) {
     NodeNext(t->root, rec);
