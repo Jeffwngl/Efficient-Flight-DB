@@ -22,8 +22,6 @@ struct flightDb {
     Tree rootByAirport;
 };
 
-static void NodeFree(Node n);
-
 // COMPARE FUNCTIONS
 // orders by flight number then by day, hour, minute
 int FlightCompare(Record rec1, Record rec2) {
@@ -124,7 +122,7 @@ List DbFindByFlightNumber(FlightDb db, char *flightNumber) { // DONE // Needs te
 
 List DbFindByDepartureAirportDay(FlightDb db, char *departureAirport, int day) { // DONE // Needs testing
     List l = ListNew();
-    if (db == NULL || departureAirport == NULL || day == NULL) {
+    if (db == NULL || departureAirport == NULL || day > 6 || day < 0) {
         return l;
     }
 
@@ -141,8 +139,9 @@ List DbFindBetweenTimes(FlightDb db,
                         int day2, int hour2, int min2) { // DONE // Needs testing
     List l = ListNew();
 
-    if (db == NULL || day1 == NULL || hour1 == NULL || min1 == NULL ||
-    day2 == NULL || hour2 == NULL || min2 == NULL) {
+    if (db == NULL || 
+    day1 > 6 || day1 < 0 || hour1 > 23 || hour1 < 0 || min1 > 59 || min1 < 0 ||
+    day2 > 6 || day2 < 0 || hour2 > 23 || hour2 < 0 || min2 > 59 || min2 < 0) {
         return l;
     }
 
