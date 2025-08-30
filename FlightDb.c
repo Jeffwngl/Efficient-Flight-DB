@@ -73,12 +73,16 @@ int AirportCompare(Record rec1, Record rec2) {
 ////////////////////////////////////////////////////////////////////////////////
 
 FlightDb DbNew(void) { // DONE
-    FlightDb db = malloc(sizeof(db));
+    FlightDb db = malloc(3 * sizeof(Tree));
 
     if (db == NULL) {
         fprintf(stderr, "error: out of memory\n");
         exit(EXIT_FAILURE);
     }
+
+    db->rootByTime = malloc(sizeof(Tree));
+    db->rootByFlight = malloc(sizeof(Tree));
+    db->rootByAirport = malloc(sizeof(Tree));
 
     db->rootByTime = TreeNew(TimeCompare);
     db->rootByFlight = TreeNew(FlightCompare);
@@ -90,6 +94,7 @@ void DbFree(FlightDb db) { // DONE
     TreeFree(db->rootByAirport, true);
     TreeFree(db->rootByFlight, true);
     TreeFree(db->rootByTime, true);
+    free(db);
 }
 
 bool DbInsertRecord(FlightDb db, Record r) { // DONE

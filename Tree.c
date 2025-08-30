@@ -42,10 +42,12 @@ struct node *RotateLeft(struct node *n);
 struct node *RotateRight(struct node *n);
 int FindHeight(struct node *n);
 int FindBalance(struct node *n);
-void NodeSearchBetween(struct node *n, Record lower, Record upper, List l);
-bool isValidLower(struct node *n, int higher);
-bool isValidHigher(struct node *n, int lower);
-Record NodeNext(struct node *n, Record rec);
+void NodeSearchBetween(struct node *n, Record lower, Record upper, List l, int (*compare)(Record, Record));
+
+static bool isValidLower(struct node *n, Record upper, int (*compare)(Record, Record));
+static bool isValidHigher(struct node *n, Record lower, int (*compare)(Record, Record));
+
+Record NodeNext(struct node *n, Record rec, int (*compare)(Record, Record));
 
 ////////////////////////////////////////////////////////////////////////
 // Provided functions
@@ -105,7 +107,7 @@ static struct node *Rebalance(struct node *n) {
     return n;
 }
 
-static struct node *RotateLeft(struct node *n) { // constant time
+struct node *RotateLeft(struct node *n) { // constant time
     if (n == NULL || n->right == NULL) {
         return n;
     }
@@ -115,7 +117,7 @@ static struct node *RotateLeft(struct node *n) { // constant time
     return n;
 }
 
-static struct node *RotateRight(struct node *n) { // constant time
+struct node *RotateRight(struct node *n) { // constant time
     if (n == NULL || n->left == NULL) {
         return n;
     }
@@ -125,20 +127,20 @@ static struct node *RotateRight(struct node *n) { // constant time
     return n;
 }
 
-static int FindHeight(struct node *n) {
+int FindHeight(struct node *n) {
     if (n == NULL) {
         return 0;
     }
     return (1 + FindHeight(n->left) >= 1 + FindHeight(n->right)) ? 1 + FindHeight(n->left) : 1 + FindHeight(n->right);
 }
 
-static int FindBalance(struct node *n) {
+int FindBalance(struct node *n) {
     return FindHeight(n->left) - FindHeight(n->right);
 } // we can add a height value to the node struct to find instantaneous heights, these heights are recalculated for the ancestors everytime insert happens.
 
 // TREE INSERT //
 
-bool TreeInsert(Tree t, Record rec) { // tree may need to take in another argument
+bool TreeInsert(Tree t, Record rec) { // DONE
     bool successful = true;
 
     if (t->root == NULL) {
@@ -152,7 +154,7 @@ bool TreeInsert(Tree t, Record rec) { // tree may need to take in another argume
 // helper function
 static struct node *NodeInsert(struct node *n, Record rec, int (*compare)(Record, Record), bool *successful) {
     if (n == NULL) {
-        struct node *newNode;
+        struct node *newNode = malloc(sizeof(Node)); // remember to free as we used malloc as we need this node beyond the function
         newNode->rec = rec;
         return newNode;
     }
@@ -203,76 +205,76 @@ static Record NodeSearch(struct node *n, Record rec, int (*compare)(Record, Reco
 List TreeSearchBetween(Tree t, Record lower, Record upper) {
     List l = ListNew();
     // invalidation case
-    if (isValidHigher && isValidLower) {
-        NodeSearchBetween(t->root, lower, upper, l);
+    if (isValidHigher(t->root, lower, t->compare) && isValidLower(t->root, upper, t->compare)) {
+        NodeSearchBetween(t->root, lower, upper, l, t->compare);
     }
     return l;
 }
 
 // helper function
-static void NodeSearchBetween(struct node *n, Record lower, Record upper, List l) {
+void NodeSearchBetween(struct node *n, Record lower, Record upper, List l, int (*compare)(Record, Record)) {
     // in order traversal
     if (n == NULL) {
         ListAppend(l, n->rec);
         return;
     }
 
-    if (n->rec > lower) {
-        NodeSearchBetween(n->left, lower, upper, l);
+    if (compare(n->rec, lower) < 0) {
+        NodeSearchBetween(n->right, lower, upper, l, compare);
     }
-    if (lower <= n->rec && n->rec <= upper) {
+    if (compare(lower, n->rec) <= 0 && compare(upper, n->rec) >= 0) {
         ListAppend(l, n->rec);
     }
-    if (n->rec < upper) {
-        NodeSearchBetween(n->right, lower, upper, l);
+    if (compare(n->rec, upper) > 0) {
+        NodeSearchBetween(n->left, lower, upper, l, compare);
     }
 }
 
 // find if there exists an array between upper and lower bounds
-bool isValidLower(struct node *n, int higher) {
+static bool isValidLower(struct node *n, Record lower, int (*compare)(Record, Record)) {
     if (n->left == NULL) {
-        if (n->rec > higher) {
+        if (compare(n->rec, lower) > 0) {
             return false;
         }
         return true;
     }
-    isValidLower(n->left, higher);
+    return isValidLower(n->left, lower, compare);
 }
 
-bool isValidHigher(struct node *n, int lower) {
-    if (n->left == NULL) {
-        if (n->rec > lower) {
+static bool isValidHigher(struct node *n, Record upper, int (*compare)(Record, Record)) {
+    if (n->right == NULL) {
+        if (compare(n->rec, upper) > 0) {
             return false;
         }
         return true;
     }
-    isValidHigher(n->right, lower);
+    return isValidHigher(n->right, upper, compare);
 }
 
 // TREE NEXT // TO FIX
 
 Record TreeNext(Tree t, Record rec) {
-    NodeNext(t->root, rec);
+    NodeNext(t->root, rec, t->compare);
     return NULL;
 }
 
 // helper function
-static Record NodeNext(struct node *n, Record rec) {
+Record NodeNext(struct node *n, Record rec, int (*compare)(Record, Record)) {// why there is a case where it returns nothing, because C needs to prove it can return a value
     if (n == NULL) {
         return NULL;
     }
-    if (n->rec < rec < n->right->rec) {
-        return n->right->rec;
+    if (n->right != NULL) {
+        if (compare(n->rec, rec) < 0 && compare(rec, n->right->rec) < 0) {
+            return n->right->rec;
+        }
     }
-    if (n->rec == rec) {
+    if (compare(n->rec, rec) == 0) {
         return rec;
     }
-    if (n->rec < rec) {
-        return NodeNext(n->right, rec);
+    if (compare(n->rec, rec) < 0) {
+        return NodeNext(n->right, rec, compare);
     }
-    else if (n->rec > rec) {
-        return NodeNext(n->left, rec);
-    }
+    return NodeNext(n->left, rec, compare);
 }
 
 
