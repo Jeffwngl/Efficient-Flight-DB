@@ -80,9 +80,9 @@ FlightDb DbNew(void) { // DONE
         exit(EXIT_FAILURE);
     }
 
-    db->rootByTime = malloc(sizeof(Tree));
-    db->rootByFlight = malloc(sizeof(Tree));
-    db->rootByAirport = malloc(sizeof(Tree));
+    // db->rootByTime = malloc(sizeof(Tree)); // leaks from here
+    // db->rootByFlight = malloc(sizeof(Tree));
+    // db->rootByAirport = malloc(sizeof(Tree));
 
     db->rootByTime = TreeNew(TimeCompare);
     db->rootByFlight = TreeNew(FlightCompare);
@@ -92,8 +92,8 @@ FlightDb DbNew(void) { // DONE
 
 void DbFree(FlightDb db) { // DONE
     TreeFree(db->rootByAirport, true);
-    TreeFree(db->rootByFlight, true);
-    TreeFree(db->rootByTime, true);
+    TreeFree(db->rootByFlight, false);
+    TreeFree(db->rootByTime, false);
     free(db);
 }
 
@@ -101,7 +101,7 @@ bool DbInsertRecord(FlightDb db, Record r) { // DONE
     return (TreeInsert(db->rootByFlight, r) && TreeInsert(db->rootByTime, r) && TreeInsert(db->rootByAirport, r));
 }
 
-List DbFindByFlightNumber(FlightDb db, char *flightNumber) { // DONE // Needs testing
+List DbFindByFlightNumber(FlightDb db, char *flightNumber) { // DONE
     List l = ListNew();
     if (db == NULL || flightNumber == NULL) {
         return l;

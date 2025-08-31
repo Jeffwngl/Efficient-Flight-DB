@@ -131,7 +131,7 @@ int FindHeight(struct node *n) {
     if (n == NULL) {
         return 0;
     }
-    return (1 + FindHeight(n->left) >= 1 + FindHeight(n->right)) ? 1 + FindHeight(n->left) : 1 + FindHeight(n->right);
+    return (FindHeight(n->left) >= FindHeight(n->right)) ? 1 + FindHeight(n->left) : 1 + FindHeight(n->right);
 }
 
 int FindBalance(struct node *n) {
@@ -143,7 +143,7 @@ int FindBalance(struct node *n) {
 bool TreeInsert(Tree t, Record rec) { // DONE
     bool successful = true;
 
-    if (t->root == NULL) {
+    if (t == NULL) {
         return false;
     }
 
@@ -154,8 +154,10 @@ bool TreeInsert(Tree t, Record rec) { // DONE
 // helper function
 static struct node *NodeInsert(struct node *n, Record rec, int (*compare)(Record, Record), bool *successful) {
     if (n == NULL) {
-        struct node *newNode = malloc(sizeof(Node)); // remember to free as we used malloc as we need this node beyond the function
+        struct node *newNode = malloc(sizeof(struct node)); // remember to free as we used malloc as we need this node beyond the function
         newNode->rec = rec;
+        newNode->left = NULL;
+        newNode->right = NULL;
         return newNode;
     }
 
@@ -181,7 +183,7 @@ Record TreeSearch(Tree t, Record rec) {
     return NodeSearch(t->root, rec, t->compare);
 }
 
-// helper function // add list insertion methods
+// helper function
 static Record NodeSearch(struct node *n, Record rec, int (*compare)(Record, Record)) {
     if (n == NULL) {
         return NULL;
@@ -232,6 +234,9 @@ void NodeSearchBetween(struct node *n, Record lower, Record upper, List l, int (
 
 // find if there exists an array between upper and lower bounds
 static bool isValidLower(struct node *n, Record lower, int (*compare)(Record, Record)) {
+    if (n == NULL) {
+        return false;
+    }
     if (n->left == NULL) {
         if (compare(n->rec, lower) > 0) {
             return false;
@@ -242,7 +247,10 @@ static bool isValidLower(struct node *n, Record lower, int (*compare)(Record, Re
 }
 
 static bool isValidHigher(struct node *n, Record upper, int (*compare)(Record, Record)) {
-    if (n->right == NULL) {
+    if (n == NULL) {
+        return false;
+    }
+    if (n->right == NULL) { // segv
         if (compare(n->rec, upper) > 0) {
             return false;
         }
