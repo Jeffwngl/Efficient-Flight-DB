@@ -80,10 +80,6 @@ FlightDb DbNew(void) { // DONE
         exit(EXIT_FAILURE);
     }
 
-    // db->rootByTime = malloc(sizeof(Tree)); // leaks from here
-    // db->rootByFlight = malloc(sizeof(Tree));
-    // db->rootByAirport = malloc(sizeof(Tree));
-
     db->rootByTime = TreeNew(TimeCompare);
     db->rootByFlight = TreeNew(FlightCompare);
     db->rootByAirport = TreeNew(AirportCompare);
@@ -102,10 +98,10 @@ bool DbInsertRecord(FlightDb db, Record r) { // DONE
 }
 
 List DbFindByFlightNumber(FlightDb db, char *flightNumber) { // DONE
-    List l = ListNew();
-    if (db == NULL || flightNumber == NULL) {
-        return l;
-    }
+    // List orderedFlights = ListNew();
+    // if (db == NULL || flightNumber == NULL) {
+    //     return orderedFlights;
+    // }
 
     // CollectMatches(db->rootByFlight, flightNumber, l);
 
@@ -114,6 +110,11 @@ List DbFindByFlightNumber(FlightDb db, char *flightNumber) { // DONE
     
     List orderedFlights = TreeSearchBetween(db->rootByFlight, dummyLower, dummyHigher);
 
+    printf("%d ", ListSize(orderedFlights));
+
+    RecordFree(dummyHigher);
+    RecordFree(dummyLower);
+
     return orderedFlights;
 
     // make a 2 temp records to search the tree with. (upper and lower)
@@ -121,7 +122,6 @@ List DbFindByFlightNumber(FlightDb db, char *flightNumber) { // DONE
     // use search between in order
 
     // append all available flight numbers to List
-    
 }
 
 
@@ -135,6 +135,9 @@ List DbFindByDepartureAirportDay(FlightDb db, char *departureAirport, int day) {
     Record dummyHigher = RecordNew("", departureAirport, "", day, 23, 59, 0);
 
     l = TreeSearchBetween(db->rootByAirport, dummyLower, dummyHigher);
+
+    RecordFree(dummyHigher);
+    RecordFree(dummyLower);
     
     return l;
 }
