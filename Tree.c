@@ -44,8 +44,8 @@ int FindHeight(struct node *n);
 int FindBalance(struct node *n);
 void NodeSearchBetween(struct node *n, Record lower, Record upper, List l, int (*compare)(Record, Record));
 
-static bool isValidLower(struct node *n, Record upper, int (*compare)(Record, Record));
-static bool isValidHigher(struct node *n, Record lower, int (*compare)(Record, Record));
+// static bool isValidLower(struct node *n, Record upper, int (*compare)(Record, Record));
+// static bool isValidHigher(struct node *n, Record lower, int (*compare)(Record, Record));
 
 Record NodeNext(struct node *n, Record rec, int (*compare)(Record, Record));
 
@@ -206,58 +206,62 @@ static Record NodeSearch(struct node *n, Record rec, int (*compare)(Record, Reco
 
 List TreeSearchBetween(Tree t, Record lower, Record upper) {
     List l = ListNew();
+
     // invalidation case
-    if (isValidHigher(t->root, lower, t->compare) && isValidLower(t->root, upper, t->compare)) {
-        NodeSearchBetween(t->root, lower, upper, l, t->compare);
-    }
+    // if (isValidHigher(t->root, lower, t->compare) && isValidLower(t->root, upper, t->compare)) { // not going into this loop
+    //     NodeSearchBetween(t->root, lower, upper, l, t->compare);
+    // }
+
+    NodeSearchBetween(t->root, lower, upper, l, t->compare);
     return l;
 }
 
 // helper function
-void NodeSearchBetween(struct node *n, Record lower, Record upper, List l, int (*compare)(Record, Record)) {
+void NodeSearchBetween(struct node *n, Record lower, Record upper, List l, int (*compare)(Record, Record)) { // FIX THIS!!!!
     // in order traversal
     if (n == NULL) {
-        ListAppend(l, n->rec);
         return;
     }
 
     if (compare(n->rec, lower) < 0) {
-        NodeSearchBetween(n->right, lower, upper, l, compare);
-    }
-    if (compare(lower, n->rec) <= 0 && compare(upper, n->rec) >= 0) {
-        ListAppend(l, n->rec);
-    }
-    if (compare(n->rec, upper) > 0) {
         NodeSearchBetween(n->left, lower, upper, l, compare);
     }
+    if (compare(lower, n->rec) <= 0 && compare(upper, n->rec) >= 0) {
+        NodeSearchBetween(n->right, lower, upper, l, compare);
+        ListAppend(l, n->rec);
+        NodeSearchBetween(n->left, lower, upper, l, compare);
+    }
+    if (compare(n->rec, upper) > 0) {
+        NodeSearchBetween(n->right, lower, upper, l, compare);
+    }
 }
 
-// find if there exists an array between upper and lower bounds
-static bool isValidLower(struct node *n, Record lower, int (*compare)(Record, Record)) {
-    if (n == NULL) {
-        return false;
-    }
-    if (n->left == NULL) {
-        if (compare(n->rec, lower) > 0) {
-            return false;
-        }
-        return true;
-    }
-    return isValidLower(n->left, lower, compare);
-}
+// if there exists an array between upper and lower bounds
+// static bool isValidLower(struct node *n, Record lower, int (*compare)(Record, Record)) {
+//     if (n == NULL) {
+//         return false;
+//     }
+//     if (n->left == NULL) {
+//         if (compare(n->rec, lower) > 0) {
+//             return false;
+//         }
+//         return true;
+//     }
+//     return isValidLower(n->left, lower, compare);
+// }
 
-static bool isValidHigher(struct node *n, Record upper, int (*compare)(Record, Record)) {
-    if (n == NULL) {
-        return false;
-    }
-    if (n->right == NULL) { // segv
-        if (compare(n->rec, upper) > 0) {
-            return false;
-        }
-        return true;
-    }
-    return isValidHigher(n->right, upper, compare);
-}
+// static bool isValidHigher(struct node *n, Record upper, int (*compare)(Record, Record)) {
+//     if (n == NULL) {
+//         return false;
+//     }
+//     if (n->right == NULL) { // segv
+//         if (compare(n->rec, upper) > 0) {
+//             return false;
+//         }
+//         return true;
+//     }
+//     return isValidHigher(n->right, upper, compare);
+// }
 
 // TREE NEXT // TO FIX
 
